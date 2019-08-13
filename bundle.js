@@ -41,6 +41,8 @@ const bundle = async () => {
   const bundledJsPath = Array.from(bundleData.childBundles.values()).find(
     bundle => bundle.type === 'js',
   ).name
+
+  const parcelFileSize = prettyBytes((await fs.stat(bundledJsPath)).size)
   const code = await fs.readFile(bundledJsPath)
 
   /**
@@ -66,19 +68,40 @@ const bundle = async () => {
   await fs.writeFile(bundledJsPath, crunchedCode)
 
   /**
-   * Get the Total & JS file size
+   * Get the Total, HTML & JS file size
    */
   const finalFolderSize = prettyBytes(await du(DIST))
-  const finalFileSize = prettyBytes((await fs.stat(bundledJsPath)).size)
 
-  const finalFileGzipSize = prettyBytes(await gzip.file(bundledJsPath))
+  const getSizes = async path => {
+    return [(await fs.stat(path)).size, await gzip.file(path)]
+  }
+
+  const jsSizes = await getSizes(bundledJsPath)
+  const htmlSizes = await getSizes(path.join(DIST, 'index.html'))
 
   log
-    .succeed(chalk.green('Finished!'))
-    .info(chalk.magenta('Dist Size: ') + chalk.yellow(finalFolderSize))
+    .succeed(chalk.green('Bundling Finished'))
+    .info(chalk.cyan('Parcel JS Size: ') + chalk.red(parcelFileSize))
+    .succeed(chalk.green('Finished Optimizing!'))
     .info(
-      chalk.magenta('JS Size: ') +
-        chalk.yellow(`${finalFileSize} (${finalFileGzipSize} gzipped)`),
+      chalk.magenta('Final Dist Size: ') +
+        chalk.yellow(
+          `${finalFolderSize} (${prettyBytes(
+            jsSizes[1] + htmlSizes[1],
+          )} gzipped)`,
+        ),
+    )
+    .info(
+      chalk.magenta('Optimized JS Size: ') +
+        chalk.yellow(
+          `${prettyBytes(jsSizes[0])} (${prettyBytes(jsSizes[1])} gzipped)`,
+        ),
+    )
+    .info(
+      chalk.magenta('Optimized HTML Size: ') +
+        chalk.yellow(
+          `${prettyBytes(htmlSizes[0])} (${prettyBytes(htmlSizes[1])} gzipped)`,
+        ),
     )
 }
 
