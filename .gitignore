@@ -1,4 +1,6 @@
 # Folders
+.cache/
+dist/
 node_modules/
 
 # Files
