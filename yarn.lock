@@ -1995,12 +1995,24 @@ dotenv@^5.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-5.0.1.tgz#a5317459bd3d79ab88cff6e44057a6a3fbb1fcef"
   integrity sha512-4As8uPrjfwb7VXC+WnLCbXK7y+Ueb2B3zgNCePYfhxS1PYeaO1YTeplffTEcbfLhvFNGLAz90VvJs9yomG7bow==
 
+du@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/du/-/du-1.0.0.tgz#f33b8d0c3944f7db78bdd6f2105c637a91f25b03"
+  integrity sha512-w00+6XpIq924IvDLyOOx5HFO4KwH6YV6buqFx6og/ErTaJ34kVOyI+Q2f+X8pvZkDoEgT6xspA4iYSN99mqPDA==
+  dependencies:
+    map-async "~0.1.1"
+
 duplexer2@~0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/duplexer2/-/duplexer2-0.1.4.tgz#8b12dab878c0d69e3e7891051662a32fc6bddcc1"
   integrity sha1-ixLauHjA1p4+eJEFFmKjL8a93ME=
   dependencies:
     readable-stream "^2.0.2"
+
+duplexer@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/duplexer/-/duplexer-0.1.1.tgz#ace6ff808c1ce66b57d1ebf97977acb02334cfc1"
+  integrity sha1-rOb/gIwc5mtX0ev5eXessCM0z8E=
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"
@@ -2592,6 +2604,14 @@ grapheme-breaker@^0.3.2:
   dependencies:
     brfs "^1.2.0"
     unicode-trie "^0.3.1"
+
+gzip-size@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/gzip-size/-/gzip-size-5.1.1.tgz#cb9bee692f87c0612b232840a873904e4c135274"
+  integrity sha512-FNHi6mmoHvs1mxZAds4PpdCS6QG8B4C1krxJsMutgxl5t3+GlRTzzI3NEkifXx2pVsOvJdOGSmIgDhQ55FwdPA==
+  dependencies:
+    duplexer "^0.1.1"
+    pify "^4.0.1"
 
 har-schema@^2.0.0:
   version "2.0.0"
@@ -3373,6 +3393,11 @@ magic-string@^0.22.4:
   dependencies:
     vlq "^0.2.2"
 
+map-async@~0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/map-async/-/map-async-0.1.1.tgz#c897c0449f85864c74b5a3f196edb42156431745"
+  integrity sha1-yJfARJ+Fhkx0taPxlu20IVZDF0U=
+
 map-cache@^0.2.2:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/map-cache/-/map-cache-0.2.2.tgz#c32abd0bd6525d9b051645bb4f26ac5dc98a0dbf"
@@ -4045,6 +4070,11 @@ physical-cpu-count@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/physical-cpu-count/-/physical-cpu-count-2.0.0.tgz#18de2f97e4bf7a9551ad7511942b5496f7aba660"
   integrity sha1-GN4vl+S/epVRrXURlCtUlverpmA=
+
+pify@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/pify/-/pify-4.0.1.tgz#4b2cd25c50d598735c50292224fd8c6df41e3231"
+  integrity sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==
 
 pn@^1.1.0:
   version "1.1.0"
