@@ -5,3 +5,4 @@ dist/
 node_modules/
 
 # Files
+js13k.zip
