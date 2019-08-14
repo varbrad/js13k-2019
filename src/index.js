@@ -1,3 +1,3 @@
-import makeCanvas from './canvas'
+const f = 123
 
-makeCanvas()
+console.log(f * 2)

@@ -1,91 +1,152 @@
-const fs = require('fs-extra')
 const path = require('path')
-const du = require('du')
-const gzip = require('gzip-size')
-
-const Parcel = require('parcel-bundler')
-const prettyBytes = require('pretty-bytes')
+const fs = require('fs-extra')
+const rollup = require('rollup')
 const terser = require('terser')
+const archiver = require('archiver')
 const ora = require('ora')
 const chalk = require('chalk')
+const bytes = require('pretty-bytes')
+const ParcelBundler = require('parcel-bundler')
 
-const JS_ENTRY = path.join(__dirname, '/src/index.js')
-const DIST = path.join(__dirname, '/dist')
+const HTML_INPUT = 'src/index.html'
+const JS_INPUT = 'src/index.js'
+const DIST = 'dist'
+const HTML_OUTPUT = 'dist/index.html'
+const JS_OUTPUT = 'dist/bundle.js'
 
-const log = ora({ text: 'Bundling' }).start()
+const MAX_SIZE = 13 * 1024 // 13KB
 
-const bundle = async () => {
-  /**
-   * Nuke old dist folder
-   */
-  await fs.emptyDir(DIST)
+const sizeOf = string => Buffer.byteLength(string, 'utf8')
 
-  /**
-   * Parcel sources
-   */
-  const bundler = new Parcel([JS_ENTRY], {
+/**
+ * Uses Parcel to bundle our HTML & CSS
+ */
+const bundleHTML = async () => {
+  const options = {
     outDir: DIST,
     watch: false,
-    minify: true,
-    detailedReport: false,
-    logLevel: 0,
     contentHash: false,
+    minify: true,
     scopeHoist: true,
+    target: 'browser',
+    logLevel: 0,
+    sourceMaps: false,
+  }
+
+  const bundler = new ParcelBundler(HTML_INPUT, options)
+  const bundle = await bundler.bundle()
+
+  const { name } = Array.from(bundle.childBundles).find(
+    bundle => bundle.type === 'js',
+  )
+
+  const [, sourceName] = /.+\\(.+?.js)$/.exec(name)
+
+  const htmlSource = await fs.readFile(HTML_OUTPUT, 'utf8')
+  await fs.writeFile(HTML_OUTPUT, htmlSource.replace(sourceName, 'bundle.js'))
+  await fs.remove(name)
+}
+
+/**
+ * Uses rollup to produce an IIFE of the entire JS bundle
+ */
+const bundleJS = async () => {
+  // Invoke the bundler
+  const bundle = await rollup.rollup({
+    input: JS_INPUT,
   })
-  await bundler.bundle()
+  // Generate our final code
+  const {
+    output: [{ code }],
+  } = await bundle.generate({
+    format: 'iife',
+    compact: true,
+    strict: false,
+  })
+  // Get our first chunks code (We should only have 1 chunk)
+  return [code, sizeOf(code)]
+}
 
-  /**
-   * Read the code that Parcel output
-   */
-  const bundledJsPath = path.join(DIST, 'index.js')
-
-  const parcelFileSize = prettyBytes((await fs.stat(bundledJsPath)).size)
-  const code = await fs.readFile(bundledJsPath)
-
-  /**
-   * Do some terser magic
-   */
+const minify = async bundledCode => {
   const options = {
     toplevel: true,
     mangle: true,
     compress: {
       passes: 10,
       unsafe: true,
-      unsafe_undefined: true,
-      unsafe_proto: true,
-      unsafe_methods: true,
-      unsafe_math: true,
-      unsafe_Function: true,
-      unsafe_comps: true,
-      unsafe_arrows: true,
       pure_getters: true,
     },
   }
 
-  const minified = terser.minify(`onload = function(){${code}}`, options)
-  const crunchedCode =
-    minified.code.length > 21
-      ? minified.code
-          .slice(0, -1)
-          .replace(/-- >/g, '-->')
-          .replace(/onload=function\(\){(var )?(.*)}/, '$2')
-      : ''
-
-  /**
-   * Write the terser code to our min bundle
-   */
-  await fs.writeFile(bundledJsPath, crunchedCode)
-
-  /**
-   * Get the Total, HTML & JS file size
-   */
-  const finalFolderSize = prettyBytes(await du(DIST))
-
-  log
-    .succeed(chalk.green('Bundling Finished'))
-    .info(chalk.cyan('Parcel JS Size: ') + chalk.red(parcelFileSize))
-    .succeed(chalk.green('Finished Optimizing!'))
-    .info(`Size: ${finalFolderSize}`)
+  const { code } = terser.minify(bundledCode, options)
+  return [code, sizeOf(code)]
 }
 
-bundle()
+const zip = async () =>
+  new Promise(resolve => {
+    const stream = fs.createWriteStream(path.join(__dirname, 'js13k.zip'))
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    })
+
+    stream.on('close', () => {
+      resolve(archive.pointer())
+    })
+
+    archive.pipe(stream)
+    archive.directory(DIST)
+    archive.finalize()
+  })
+
+const run = async () => {
+  const log = ora(chalk.yellow('Cleaning output folder...'))
+
+  await fs.emptyDir(DIST)
+
+  log.text = chalk.yellow('Bundling HTML & CSS...')
+
+  /**
+   * Bundling of our HTML & CSS
+   */
+  await bundleHTML()
+
+  log.text = chalk.yellow('Bundling JS...')
+
+  /**
+   * Bundling & minifcation of JS
+   */
+  const [code, bundleSize] = await bundleJS()
+  const [minifiedCode, minifiedSize] = await minify(code)
+
+  log.succeed(chalk.cyan('Bundling & minification completed!'))
+  log.text = chalk.yellow('Writing bundle to disk...')
+
+  /**
+   * Writing to our dist folder
+   */
+  await fs.writeFile(JS_OUTPUT, minifiedCode)
+
+  log.succeed(chalk.cyan('Bundle written to disk!'))
+  log.text = chalk.yellow('Zipping up bundles...')
+
+  /**
+   * Produce a ZIP archive of our dist folder
+   */
+  const zipSize = await zip()
+
+  log.succeed(chalk.cyan('Zip file generated!'))
+
+  log.succeed(chalk.green('All done!'))
+
+  log.info(chalk.yellow(`Original JS: ${bytes(bundleSize)}`))
+  log.info(chalk.yellow(`Bundled JS: ${bytes(minifiedSize)}`))
+
+  const percent = ((zipSize / MAX_SIZE) * 100).toFixed(2)
+  log.info(
+    chalk.magenta(
+      `Zip Size: ${bytes(zipSize)} / ${bytes(MAX_SIZE)} (${percent}%)`,
+    ),
+  )
+}
+
+run()
