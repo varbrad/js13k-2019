@@ -50,10 +50,10 @@ const bundle = async () => {
    */
   const options = {
     toplevel: true,
+    mangle: true,
     compress: {
       passes: 10,
       unsafe: true,
-      mangle: true,
       unsafe_undefined: true,
       unsafe_proto: true,
       unsafe_methods: true,
@@ -62,8 +62,6 @@ const bundle = async () => {
       unsafe_comps: true,
       unsafe_arrows: true,
       pure_getters: true,
-      ecma: 8,
-      output: { ecma: 8 },
     },
   }
 
