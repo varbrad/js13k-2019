@@ -1,7 +1,8 @@
 # Folders
 .cache/
 .vscode/
-dist/
 node_modules/
 
 # Files
+dist/*.css
+dist/*.js

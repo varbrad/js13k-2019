@@ -1,4 +1,3 @@
-const a = 1238
-const f = () => a
+import makeCanvas from './canvas'
 
-console.log(f())
+makeCanvas()

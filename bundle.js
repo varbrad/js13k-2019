@@ -9,7 +9,7 @@ const terser = require('terser')
 const ora = require('ora')
 const chalk = require('chalk')
 
-const ENTRYPOINT = path.join(__dirname, '/src/index.html')
+const JS_ENTRY = path.join(__dirname, '/src/index.js')
 const DIST = path.join(__dirname, '/dist')
 
 const log = ora({ text: 'Bundling' }).start()
@@ -23,9 +23,8 @@ const bundle = async () => {
   /**
    * Parcel sources
    */
-  const bundler = new Parcel(ENTRYPOINT, {
+  const bundler = new Parcel([JS_ENTRY], {
     outDir: DIST,
-    outFile: 'index.html',
     watch: false,
     minify: true,
     detailedReport: false,
@@ -33,14 +32,12 @@ const bundle = async () => {
     contentHash: false,
     scopeHoist: true,
   })
-  const bundleData = await bundler.bundle()
+  await bundler.bundle()
 
   /**
    * Read the code that Parcel output
    */
-  const bundledJsPath = Array.from(bundleData.childBundles.values()).find(
-    bundle => bundle.type === 'js',
-  ).name
+  const bundledJsPath = path.join(DIST, 'index.js')
 
   const parcelFileSize = prettyBytes((await fs.stat(bundledJsPath)).size)
   const code = await fs.readFile(bundledJsPath)
@@ -84,37 +81,11 @@ const bundle = async () => {
    */
   const finalFolderSize = prettyBytes(await du(DIST))
 
-  const getSizes = async path => {
-    return [(await fs.stat(path)).size, await gzip.file(path)]
-  }
-
-  const jsSizes = await getSizes(bundledJsPath)
-  const htmlSizes = await getSizes(path.join(DIST, 'index.html'))
-
   log
     .succeed(chalk.green('Bundling Finished'))
     .info(chalk.cyan('Parcel JS Size: ') + chalk.red(parcelFileSize))
     .succeed(chalk.green('Finished Optimizing!'))
-    .info(
-      chalk.magenta('Final Dist Size: ') +
-        chalk.yellow(
-          `${finalFolderSize} (${prettyBytes(
-            jsSizes[1] + htmlSizes[1],
-          )} gzipped)`,
-        ),
-    )
-    .info(
-      chalk.magenta('Optimized JS Size: ') +
-        chalk.yellow(
-          `${prettyBytes(jsSizes[0])} (${prettyBytes(jsSizes[1])} gzipped)`,
-        ),
-    )
-    .info(
-      chalk.magenta('Optimized HTML Size: ') +
-        chalk.yellow(
-          `${prettyBytes(htmlSizes[0])} (${prettyBytes(htmlSizes[1])} gzipped)`,
-        ),
-    )
+    .info(`Size: ${finalFolderSize}`)
 }
 
 bundle()
