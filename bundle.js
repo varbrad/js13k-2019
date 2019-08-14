@@ -50,7 +50,21 @@ const bundle = async () => {
    */
   const options = {
     toplevel: true,
-    compress: { passes: 10, unsafe: true, pure_getters: true },
+    compress: {
+      passes: 10,
+      unsafe: true,
+      mangle: true,
+      unsafe_undefined: true,
+      unsafe_proto: true,
+      unsafe_methods: true,
+      unsafe_math: true,
+      unsafe_Function: true,
+      unsafe_comps: true,
+      unsafe_arrows: true,
+      pure_getters: true,
+      ecma: 8,
+      output: { ecma: 8 },
+    },
   }
 
   const minified = terser.minify(`onload = function(){${code}}`, options)
