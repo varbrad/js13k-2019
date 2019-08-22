@@ -28,6 +28,11 @@ const update = () => {
   fr(-20, -20, 40, 40)
   ctx.restore()
 
+  for (let i = 0; i < 20; ++i) {
+    console.log(i)
+    console.log(i * 2)
+  }
+
   requestAnimationFrame(update)
 }
 
