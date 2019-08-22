@@ -15,6 +15,7 @@ module.exports = async () => {
   const {
     output: [{ code }],
   } = await bundle.generate({
+    name: 'bundle.js',
     format: 'iife',
     compact: true,
     strict: false,

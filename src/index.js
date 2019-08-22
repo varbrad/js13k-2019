@@ -1,38 +1,33 @@
 import makeCanvas from './js/canvas'
-
-const [width, height] = [window.innerWidth, window.innerHeight]
+import { renderBg, updateBg } from './js/bg'
+import { gameWidth, gameHeight, CLEAR_COLOUR } from './js/consts'
+import StartScreen from './js/scenes/start'
 
 /** @type {CanvasRenderingContext2D} */
-const ctx = makeCanvas(width, height)
+const ctx = makeCanvas('game', gameWidth, gameHeight)
+const bgCtx = makeCanvas('bg', gameWidth, gameHeight)
 
-const fs = style => (ctx.fillStyle = style)
-const fr = (...args) => ctx.fillRect(...args)
+ctx.font = 'italic bold 22px monospace'
 
-let x = 0
-let y = 0
+export const state = {
+  screen: new StartScreen(),
+}
+
+const render = () => {
+  renderBg(bgCtx)
+
+  ctx.fillStyle = CLEAR_COLOUR
+  ctx.fillRect(0, 0, gameWidth, gameHeight)
+}
 
 const update = () => {
-  x += 1
-  y += 2
+  // Update things
+  updateBg()
+  if (state.screen) state.screen.update()
 
-  if (x > width) x = 0
-  if (y > height) y = 0
-
-  fs('red')
-  fr(0, 0, width, height)
-
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(x / 10)
-  fs('black')
-  fr(-20, -20, 40, 40)
-  ctx.restore()
-
-  for (let i = 0; i < 20; ++i) {
-    console.log(i)
-    console.log(i * 2)
-  }
-
+  // Render
+  render()
+  if (state.screen) state.screen.render(ctx)
   requestAnimationFrame(update)
 }
 
