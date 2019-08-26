@@ -1,33 +1,43 @@
 import makeCanvas from './js/canvas'
-
-const [width, height] = [window.innerWidth, window.innerHeight]
+import {
+  gameWidth,
+  gameHeight,
+  SCALE,
+  DEG90,
+  DEG180,
+  DEG270,
+} from './js/consts'
+import { fill, render } from './js/render'
+import { pip } from './js/sprites/basic'
+import { renderGame, updateGame } from './js/game'
 
 /** @type {CanvasRenderingContext2D} */
-const ctx = makeCanvas(width, height)
+const ctx = makeCanvas('game', gameWidth, gameHeight, SCALE)
 
-const fs = style => (ctx.fillStyle = style)
-const fr = (...args) => ctx.fillRect(...args)
+ctx.font = 'italic bold 22px monospace'
 
-let x = 0
-let y = 0
+const mainRender = () => {
+  ctx.save()
+  ctx.scale(SCALE, SCALE)
+  fill(ctx)
+  // Render the game
+  renderGame(ctx)
+  // Top left pip
+  render(ctx, pip, 3, 3)
+  // Top right pip
+  render(ctx, pip, gameWidth - 3, 3, DEG90)
+  // Bottom right pip
+  render(ctx, pip, gameWidth - 3, gameHeight - 3, DEG180)
+  // Bottom left pip
+  render(ctx, pip, 3, gameHeight - 3, DEG270)
+  ctx.restore()
+}
 
 const update = () => {
-  x += 1
-  y += 2
-
-  if (x > width) x = 0
-  if (y > height) y = 0
-
-  fs('red')
-  fr(0, 0, width, height)
-
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(x / 10)
-  fs('black')
-  fr(-20, -20, 40, 40)
-  ctx.restore()
-
+  // Update
+  updateGame()
+  // Render
+  mainRender()
   requestAnimationFrame(update)
 }
 
