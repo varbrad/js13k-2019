@@ -23,11 +23,12 @@ export const getColor = colorCode => {
   }
 }
 
-export const render = (ctx, item, x, y, angle) => {
+export const render = (ctx, item, x, y, angle, scale = 1) => {
   ctx.save()
   const [w, h] = [item[0].length, item.length]
   ctx.translate(x, y)
   ctx.rotate(angle)
+  ctx.scale(scale, scale)
   for (let _y = 0; _y < h; ++_y) {
     for (let _x = 0; _x < w; ++_x) {
       const color = item[_y][_x]
