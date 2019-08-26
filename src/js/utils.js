@@ -9,9 +9,3 @@ export const randDelta = () => {
   const angle = randAngle()
   return [Math.cos(angle), Math.sin(angle)]
 }
-
-export const wrap = (val, min, max) => {
-  if (val > max) return (val % max) + min
-  if (val < min) return (min % val) + max
-  return val
-}

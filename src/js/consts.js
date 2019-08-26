@@ -1,14 +1,13 @@
-export const [gameWidth, gameHeight] = [160, 288]
+export const [gameWidth, gameHeight] = [180, 144]
+export const SCALE = 3
 
 // Colours (https://lospec.com/palette-list/grapefruit)
-export const CLEAR_COLOUR = '#6df7c1'
-export const DARK_CLEAR_COLOUR = '#393457'
+export const BLACK = 1 // 'rgb(10, 9, 18)'
+export const PURPLE = 2 // 'rgb(112, 87, 156)'
+export const PINK = 3 // 'rgb(224, 150, 168)'
+export const WHITE = 4 // 'rgb(255, 241, 235)'
 
-export const COLOURS = [
-  '#ffffff',
-  '#f7e476',
-  '#c92464',
-  '#f48cb6',
-  '#f99252',
-  '#a1e55a',
-]
+export const DEG90 = Math.PI / 2
+export const DEG180 = Math.PI
+export const DEG270 = DEG180 + DEG90
+export const DEG360 = Math.PI * 2
